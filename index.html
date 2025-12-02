@@ -1,0 +1,374 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>光的反射定律</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+ 
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 20px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            overflow: hidden;
+        }
+
+        header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 30px;
+            text-align: center;
+        }
+
+        header h1 {
+            font-size: 2.5em;
+            margin-bottom: 10px;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
+        }
+
+        header p {
+            font-size: 1.2em;
+            opacity: 0.9;
+        }
+
+        .content {
+            padding: 40px;
+        }
+
+        .section {
+            margin-bottom: 40px;
+            background: #f8f9fa;
+            border-radius: 15px;
+            padding: 30px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.08);
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+
+        .section:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.15);
+        }
+
+        .section h2 {
+            color: #333;
+            margin-bottom: 20px;
+            font-size: 1.8em;
+            border-bottom: 3px solid #667eea;
+            padding-bottom: 10px;
+        }
+
+        .video-container {
+            position: relative;
+            padding-bottom: 56.25%;
+            height: 0;
+            overflow: hidden;
+            border-radius: 10px;
+            box-shadow: 0 5px 20px rgba(0, 0, 0, 0.2);
+            background: #000;
+        }
+
+        .video-container video {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+ /* 1. 外层容器：完全取消滚动，高度自适应内容 */
+    .experiment-container {
+        overflow: visible !important; /* 彻底禁用滚动 */
+        height: auto !important; /* 高度随内容自动调整 */
+        min-height: 500px; /* 保留最小高度，避免内容过短时变形 */
+        max-height: none !important; /* 取消最大高度限制（关键） */
+        width: 100% !important; /* 宽度占满父容器 */
+        box-sizing: border-box; /* 避免内边距导致宽度溢出 */
+        padding: 0 15px; /* 可选：添加左右内边距，避免内容贴边 */
+    }
+
+    /* 2. 实验内部元素：强制适配容器，不溢出 */
+    .experiment-container > * {
+        max-width: 100% !important; /* 所有子元素宽度不超过容器 */
+        height: auto !important; /* 高度自动适配 */
+        overflow: hidden !important; /* 禁用内部元素滚动 */
+    }
+
+    /* 3. 针对光的反射实验可能存在的画布/容器优化 */
+    .light-reflection-canvas, /* 假设实验画布类名（根据实际调整） */
+    .experiment-content { /* 假设实验内容容器类名 */
+        width: 100% !important;
+        height: auto !important;
+        transform: none !important; /* 取消可能导致偏移的变形 */
+    }
+
+    /* 4. 移除可能存在的滚动条样式（兼容部分浏览器） */
+    ::-webkit-scrollbar {
+        display: none !important; /* 隐藏webkit内核浏览器滚动条 */
+    }
+    * {
+        -ms-overflow-style: none !important; /* IE/Edge 隐藏滚动条 */
+        scrollbar-width: none !important; /* Firefox 隐藏滚动条 */
+    }
+        
+
+        .description {
+            margin-top: 20px;
+            padding: 20px;
+            background: white;
+            border-radius: 10px;
+            border-left: 4px solid #667eea;
+        }
+
+        .description h3 {
+            color: #667eea;
+            margin-bottom: 10px;
+        }
+
+        .description p {
+            line-height: 1.6;
+            color: #555;
+        }
+
+        .btn-container {
+            text-align: center;
+            margin-top: 30px;
+        }
+
+        .btn {
+            display: inline-block;
+            padding: 12px 30px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            text-decoration: none;
+            border-radius: 25px;
+            font-weight: bold;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 15px rgba(102, 126, 234, 0.4);
+        }
+
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(102, 126, 234, 0.6);
+        }
+
+        footer {
+            background: #333;
+            color: white;
+            text-align: center;
+            padding: 20px;
+            font-size: 0.9em;
+        }
+
+        @media (max-width: 768px) {
+            header h1 {
+                font-size: 2em;
+            }
+            
+            .content {
+                padding: 20px;
+            }
+            
+            .section {
+                padding: 20px;
+            }
+            
+            .experiment-container {
+                height: 400px;
+            }
+        }
+
+        .loading {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            border: 3px solid #f3f3f3;
+            border-top: 3px solid #667eea;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin-left: 10px;
+            vertical-align: middle;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .error-message {
+            color: #e74c3c;
+            background: #fee;
+            padding: 15px;
+            border-radius: 8px;
+            margin-top: 10px;
+            display: none;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>光的反射定律</h1>
+            
+        </header>
+
+        <div class="content">
+            <!-- 视频展示部分 -->
+            <div class="section">
+                <h2>🎬 实验视频演示</h2>
+                <div class="video-container">
+                    <video id="experimentVideo" controls >
+                        <source src="Untitledvideo .mp4" type="video/mp4">
+                        您的浏览器不支持视频播放
+                    </video>
+                </div>
+                
+            </div>
+
+            <!-- 交互式实验部分 -->
+            <div class="section">
+                <h2>🔬 交互式实验模拟</h2>
+                <div id="experimentError" class="error-message"></div>
+                <iframe id="experimentFrame" class="experiment-container" src="LightReflectionExperiment.html">
+                    您的浏览器不支持iframe
+                </iframe>
+                <div class="description">
+                    <h3>操作指南</h3>
+                    <p>这是一个交互式的光的反射定律实验模拟器。您可以：</p>
+                    <ul style="margin-left: 20px; margin-top: 10px;">
+                        <li>拖动红色光源改变入射角度</li>
+                        <li>观察反射角如何随入射角变化</li>
+                        <li>点击"记录数据"按钮记录实验结果</li>
+                        <li>使用"随机角度"按钮快速切换不同角度</li>
+                    </ul>
+                </div>
+            </div>
+
+            
+        </div>
+
+        <footer>
+            <p>© 2024 科学实验展示平台 | 使用 HTML5、CSS3 和 JavaScript 构建</p>
+            <p>部署在 GitHub Pages 上</p>
+        </footer>
+    </div>
+
+    <script>
+        // 页面加载完成后的初始化
+        document.addEventListener('DOMContentLoaded', function() {
+            // 检查视频是否可以加载
+            const video = document.getElementById('experimentVideo');
+            video.addEventListener('error', function() {
+                console.error('视频加载失败');
+                showVideoError();
+            });
+
+            // 检查实验页面是否可以加载
+            const iframe = document.getElementById('experimentFrame');
+            iframe.addEventListener('error', function() {
+                console.error('实验页面加载失败');
+                showExperimentError();
+            });
+
+            // 尝试加载内容
+            setTimeout(() => {
+                checkContentLoaded();
+            }, 3000);
+        });
+
+        // 显示视频错误信息
+        function showVideoError() {
+            const videoContainer = document.querySelector('.video-container');
+            videoContainer.innerHTML = `
+                <div style="padding: 50px; text-align: center; background: #fee; color: #e74c3c; border-radius: 10px;">
+                    <h3>视频加载失败</h3>
+                    <p>请确保 "试管中气泡下的阳光.mp4" 文件已正确上传</p>
+                    <p>您可以将视频文件重命名为 "试管中气泡下的阳光.mp4" 并上传到仓库根目录</p>
+                </div>
+            `;
+        }
+
+        // 显示实验页面错误信息
+        function showExperimentError() {
+            const errorDiv = document.getElementById('experimentError');
+            errorDiv.style.display = 'block';
+            errorDiv.innerHTML = `
+                <strong>实验页面加载失败</strong><br>
+                请确保 "LightReflectionExperiment.html" 文件已正确上传<br>
+                您可以将HTML文件重命名为 "光的反射实验.html" 并上传到仓库根目录
+            `;
+        }
+
+        // 检查内容是否加载成功
+        function checkContentLoaded() {
+            const video = document.getElementById('experimentVideo');
+            const iframe = document.getElementById('experimentFrame');
+            
+            // 检查视频
+            if (video.networkState === video.NETWORK_NO_SOURCE) {
+                showVideoError();
+            }
+            
+            // 检查iframe（由于跨域限制，无法直接检查内容）
+            // 这里只是简单显示一个提示
+            console.log('页面加载检查完成');
+        }
+
+        // 刷新实验
+        function refreshExperiment() {
+            const iframe = document.getElementById('experimentFrame');
+            iframe.src = iframe.src;
+        }
+
+        // 添加平滑滚动效果
+        document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+            anchor.addEventListener('click', function (e) {
+                e.preventDefault();
+                const target = document.querySelector(this.getAttribute('href'));
+                if (target) {
+                    target.scrollIntoView({
+                        behavior: 'smooth',
+                        block: 'start'
+                    });
+                }
+            });
+        });
+
+        // 添加页面滚动时的动画效果
+        const observerOptions = {
+            threshold: 0.1,
+            rootMargin: '0px 0px -50px 0px'
+        };
+
+        const observer = new IntersectionObserver(function(entries) {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    entry.target.style.opacity = '1';
+                    entry.target.style.transform = 'translateY(0)';
+                }
+            });
+        }, observerOptions);
+
+        // 观察所有section元素
+        document.querySelectorAll('.section').forEach(section => {
+            section.style.opacity = '0';
+            section.style.transform = 'translateY(20px)';
+            section.style.transition = 'opacity 0.6s ease, transform 0.6s ease';
+            observer.observe(section);
+        });
+    </script>
+</body>
+</html>

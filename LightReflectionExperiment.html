@@ -1,0 +1,328 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>光的反射定律实验台</title>
+<style>
+/* ---------- 整体布局 ---------- */
+body{
+    margin:0;
+    font:14px/1.4 "Microsoft YaHei",Arial,sans-serif;
+    background:linear-gradient(135deg,#f5f7fa 0%,#c3cfe2 100%);
+    display:flex;
+    justify-content:center;
+    align-items:flex-start;
+    padding:40px 10px;
+    min-height:100vh;
+    box-sizing:border-box;
+}
+#wrap{
+    width:100%;
+    max-width:900px;
+    background:#fff;
+    border-radius:15px;
+    box-shadow:0 8px 32px rgba(0,0,0,.15);
+    padding:25px 30px 35px;
+    position:relative;
+    overflow:hidden;
+}
+#wrap::before{          /* 顶部彩条 */
+    content:'';
+    position:absolute;
+    top:0;
+    left:0;
+    width:100%;
+    height:6px;
+    background:linear-gradient(90deg,#1976d2,#2196f3,#64b5f6);
+}
+h2{
+    text-align:center;
+    margin:0 0 25px;
+    color:#2d3748;
+    font-weight:600;
+    font-size:24px;
+}
+
+/* ---------- 画布 ---------- */
+#cv{
+    display:block;
+    margin:0 auto;
+    border:1px solid #e8e8e8;
+    border-radius:8px;
+    background:#fafafa;
+    cursor:move;
+    transition:box-shadow .3s ease;
+    width:100%;
+    height:auto;
+}
+#cv:hover{box-shadow:0 0 15px rgba(25,118,210,.1);}
+
+/* ---------- 信息栏 ---------- */
+#info{
+    display:flex;
+    justify-content:center;
+    gap:30px;
+    margin:18px 0;
+    font-size:20px;
+    color:#4a5568;
+    flex-wrap:wrap;
+}
+#info span{display:flex;align-items:center;gap:8px;}
+#info .value{
+    font-weight:bold;
+    color:#1976d2;
+    font-size:22px;
+    min-width:46px;
+    text-align:center;
+    padding:4px 10px;
+    background:#f0f7ff;
+    border-radius:4px;
+    border:1px solid #e3f2fd;
+}
+
+/* ---------- 按钮 ---------- */
+#ctrl{
+    text-align:center;
+    margin:22px 0;
+    display:flex;
+    justify-content:center;
+    flex-wrap:wrap;
+    gap:10px;
+}
+button{
+    padding:12px 26px;
+    border:none;
+    border-radius:6px;
+    background:#1976d2;
+    color:#fff;
+    cursor:pointer;
+    font-size:15px;
+    font-weight:500;
+    transition:all .3s ease;
+    box-shadow:0 2px 5px rgba(0,0,0,.1);
+}
+button:hover{background:#1565c0;transform:translateY(-2px);box-shadow:0 4px 8px rgba(0,0,0,.15);}
+button:active{transform:translateY(0);box-shadow:0 2px 3px rgba(0,0,0,.1);}
+button.reset{background:#f44336;}
+button.reset:hover{background:#d32f2f;}
+
+/* ---------- 表格 ---------- */
+table{
+    width:100%;
+    font-size:14px;
+    border-collapse:collapse;
+    margin-top:18px;
+    background:#fff;
+    border-radius:8px;
+    overflow:hidden;
+    box-shadow:0 2px 10px rgba(0,0,0,.05);
+}
+th,td{padding:10px 8px;border:1px solid #e8e8e8;text-align:center;}
+th{background:#f8f9fa;color:#2d3748;font-weight:600;font-size:13px;letter-spacing:.5px;}
+tr:nth-child(even) td{background:#fafafa;}
+tr:hover td{background:#f5fafe;}
+
+
+/* ---------- 提示 ---------- */
+.notes{
+    margin-top:18px;
+    padding:12px 15px;
+    background:#f5f5f5;
+    border-left:4px solid #2196f3;
+    border-radius:4px;
+    font-size:13px;
+    color:#4a5568;
+    line-height:1.6;
+}
+.notes strong{color:#1976d2;}
+</style>
+</head>
+<body>
+<div id="wrap">
+  <h2>光的反射定律实验台</h2>
+
+  <!-- 画布 -->
+  <canvas id="cv"></canvas>
+
+  <!-- 实时角度 -->
+  <div id="info">
+    <span>入射角：<span id="inc" class="value">0</span>°</span>
+    <span>反射角：<span id="ref" class="value">0</span>°</span>
+  </div>
+
+  <!-- 按钮 -->
+  <div id="ctrl">
+    <button onclick="reset()">重置实验</button>
+    <button onclick="record()">记录数据</button>
+    <button onclick="randomAngle()">随机角度</button>
+  </div>
+
+  <!-- 数据表格 -->
+  <table id="tb">
+    <thead>
+      <tr><th>序号</th><th>入射角/°</th><th>反射角/°</th></tr>
+    </thead>
+    <tbody>
+      <tr><td>1</td><td>--</td><td>--</td></tr>
+      <tr><td>2</td><td>--</td><td>--</td></tr>
+      <tr><td>3</td><td>--</td><td>--</td></tr>
+      <tr><td>4</td><td>--</td><td>--</td></tr>
+      <tr><td>5</td><td>--</td><td>--</td></tr>
+    </tbody>
+  </table>
+
+  <!-- 提示 -->
+  <div class="notes">
+    <strong>操作提示：</strong>拖动红色光源改变入射角，观察反射角变化；记录 5 组数据后可查看结论。
+  </div>
+</div>
+
+<script>
+/* ---------- 初始化 ---------- */
+const cv = document.getElementById('cv');
+const ctx = cv.getContext('2d');
+let cx, cy, mirrorW, rayLen;
+
+function initCanvasSize(){
+    const maxW = 840;                 // 最大宽度
+    const aspect = 780 / 450;         // 原始宽高比
+    let W = Math.min(maxW, window.innerWidth - 60);
+    let H = W / aspect;
+    cv.width = W;
+    cv.height = H;
+    cx = W / 2;
+    cy = H * 2 / 3;                   // 镜面在下方 2/3 处
+    mirrorW = Math.min(400, W * 0.8);
+    rayLen = Math.min(180, W * 0.25);
+}
+initCanvasSize();
+window.addEventListener('resize', () => { initCanvasSize(); draw(); });
+
+let srcA = 30 * Math.PI / 180, recCnt = 0, isDragging = false;
+draw();
+
+/* ---------- 鼠标 + 触摸 ---------- */
+function getPos(e){
+    const r = cv.getBoundingClientRect();
+    const x = (e.clientX ?? e.touches[0].clientX) - r.left;
+    const y = (e.clientY ?? e.touches[0].clientY) - r.top;
+    return {x, y};
+}
+function startDrag(e){
+    e.preventDefault();
+    const {x, y} = getPos(e);
+    const srcX = cx - rayLen * Math.sin(srcA);
+    const srcY = cy - rayLen * Math.cos(srcA);
+    if (Math.hypot(x - srcX, y - srcY) < 25) isDragging = true;
+}
+function moveDrag(e){
+    if (!isDragging) return;
+    e.preventDefault();
+    const {x, y} = getPos(e);
+    srcA = Math.atan2(cx - x, cy - y);
+    srcA = Math.max(-89 * Math.PI / 180, Math.min(89 * Math.PI / 180, srcA));
+    draw();
+}
+function endDrag(){ isDragging = false; }
+
+cv.addEventListener('mousedown', startDrag);
+cv.addEventListener('mousemove', moveDrag);
+cv.addEventListener('mouseup', endDrag);
+cv.addEventListener('mouseleave', endDrag);
+cv.addEventListener('touchstart', startDrag, {passive:false});
+cv.addEventListener('touchmove', moveDrag, {passive:false});
+cv.addEventListener('touchend', endDrag);
+
+/* ---------- 绘制 ---------- */
+/* ---------- 绘制 ---------- */
+function draw(){
+    ctx.clearRect(0, 0, cv.width, cv.height);
+
+    /* 镜面 & 刻度 & 法线（略，与你原代码相同） */
+    ctx.strokeStyle = '#333'; ctx.lineWidth = 5;
+    ctx.beginPath(); ctx.moveTo(cx - mirrorW / 2, cy); ctx.lineTo(cx + mirrorW / 2, cy); ctx.stroke();
+
+    ctx.strokeStyle = '#666'; ctx.lineWidth = 2;
+    const tickLen = 12, gap = 8, below = 6;
+    for (let x = cx - mirrorW / 2; x <= cx + mirrorW / 2; x += gap){
+        ctx.beginPath(); ctx.moveTo(x, cy + below); ctx.lineTo(x + tickLen, cy + below + tickLen); ctx.stroke();
+    }
+
+    ctx.strokeStyle = '#666'; ctx.lineWidth = 1.5; ctx.setLineDash([6, 4]);
+    ctx.beginPath(); ctx.moveTo(cx, cy - 200); ctx.lineTo(cx, cy); ctx.stroke(); ctx.setLineDash([]);
+
+    /* 关键：入射角永远取正值 */
+    const incDeg = Math.round(Math.abs(srcA) * 180 / Math.PI);
+
+    /* 光线坐标（保留符号，保证方向正确） */
+    const srcX = cx - rayLen * Math.sin(srcA), srcY = cy - rayLen * Math.cos(srcA);
+    const reflX = cx + rayLen * Math.sin(srcA), reflY = cy - rayLen * Math.cos(srcA);
+
+    /* 画光线 */
+    ctx.strokeStyle = '#ff3300'; ctx.lineWidth = 3; ctx.lineCap = 'round';
+    drawArrow(srcX, srcY, cx, cy);
+    drawArrow(cx, cy, reflX, reflY);
+
+    /* 光源（略，与你原代码相同） */
+    ctx.fillStyle = '#ff3300';
+    ctx.beginPath(); ctx.arc(srcX, srcY, 10, 0, Math.PI * 2); ctx.fill();
+    const g = ctx.createRadialGradient(srcX, srcY, 0, srcX, srcY, 18);
+    g.addColorStop(0, '#ff330088'); g.addColorStop(1, '#ff330000');
+    ctx.fillStyle = g; ctx.beginPath(); ctx.arc(srcX, srcY, 18, 0, Math.PI * 2); ctx.fill();
+
+    /* 角度弧：统一用正值画 */
+    ctx.strokeStyle = '#1976d2'; ctx.lineWidth = 2;
+    const ang = Math.abs(srcA);                         // 取正值
+    if (srcA < 0){                                      // 光源在右侧
+        ctx.beginPath(); ctx.arc(cx, cy, 40, -Math.PI / 2, -Math.PI / 2 + ang); ctx.stroke();          // 入射角弧
+        ctx.beginPath(); ctx.arc(cx, cy, 40, -Math.PI / 2 - ang, -Math.PI / 2); ctx.stroke();          // 反射角弧
+        ctx.fillStyle = '#1976d2'; ctx.font = '14px Arial'; ctx.textAlign = 'center';
+        ctx.fillText(`i=${incDeg}°`, cx + 55, cy - 35);
+        ctx.fillText(`r=${incDeg}°`, cx - 55, cy - 35);
+    } else {                                            // 光源在左侧，与你原来一样
+        ctx.beginPath(); ctx.arc(cx, cy, 40, -Math.PI / 2, -Math.PI / 2 + srcA); ctx.stroke();
+        ctx.beginPath(); ctx.arc(cx, cy, 40, -Math.PI / 2 - srcA, -Math.PI / 2); ctx.stroke();
+        ctx.fillStyle = '#1976d2'; ctx.font = '14px Arial'; ctx.textAlign = 'center';
+        ctx.fillText(`i=${incDeg}°`, cx - 55, cy - 35);
+        ctx.fillText(`r=${incDeg}°`, cx + 55, cy - 35);
+    }
+
+    /* 信息栏 */
+    document.getElementById('inc').textContent = incDeg;
+    document.getElementById('ref').textContent = incDeg;
+}
+
+function drawArrow(x1, y1, x2, y2){
+    ctx.beginPath(); ctx.moveTo(x1, y1); ctx.lineTo(x2, y2); ctx.stroke();
+}
+
+/* ---------- 记录 / 重置 / 随机 ---------- */
+function record(){
+    if (recCnt >= 5){ alert('最多记录 5 组数据'); return; }
+    const incDeg = Math.round(Math.abs(srcA) * 180 / Math.PI);
+    const row = document.getElementById('tb').rows[recCnt + 1];
+    row.cells[1].textContent = incDeg;
+    row.cells[2].textContent = incDeg;
+    row.style.backgroundColor = '#e3f2fd';
+    recCnt++;
+    if (recCnt === 5) setTimeout(() => alert('结论：反射角等于入射角，且分居法线两侧'), 500);
+}
+function reset(){
+    srcA = 30 * Math.PI / 180; recCnt = 0;
+    const tb = document.getElementById('tb');
+    for (let i = 0; i < 5; i++){
+        const r = tb.rows[i + 1];
+        r.cells[1].textContent = '--'; r.cells[2].textContent = '--';
+        r.style.backgroundColor = '';
+    }
+    draw();
+}
+function randomAngle(){
+    srcA = (Math.floor(Math.random() * 70) + 10) * Math.PI / 180;
+    if (Math.random() < 0.5) srcA = -srcA;
+    draw();
+}
+</script>
+</body>
+</html>
